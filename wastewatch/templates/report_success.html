@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container-sm text-left">
+    <h1>Success!</h1>
+    <p>Your report has been successfully submitted to WasteWatch!<br>
+        A WasteWatch administrator will review your report promptly.<br>
+        Thank you for helping to keep our environment clean!
+    </p>
+    {% if request.user.is_authenticated %}
+        <p>
+            You can view the status of your report(s) on the "My Reports" page, or by clicking
+            <a href="/my_reports" style="color: #cc7000;">here</a>.
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

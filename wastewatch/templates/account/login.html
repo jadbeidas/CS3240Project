@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+{% block content %}
+<div class="container text-center">
+    <h1><span class="font-bold text-3xl">Log In</span></h1>
+    <p><small>
+        Using WasteWatch Credentials <br>
+        Or sign in with
+        <a href="{% provider_login_url 'google' %}" id="accounts-pages-link"> Google</a>
+    </small></p>
+    <div class="error-wrapper">
+         <div class="errors">{{ form.non_field_errors }}</div>
+    </div>
+    <form action="{% url 'account_login' %}" method="POST" class="my-auto">
+        <div>
+            {% csrf_token %}
+
+            <div class="my-3">
+                <label>
+                    <input type="text" name="login" placeholder="Username" class="form-control">
+                </label>
+            </div>
+            <div class="my-3">
+                <label>
+                    <input type="password" name="password" placeholder="Password" class="form-control">
+                </label>
+            </div>
+        </div>
+        <button class="btn" type="submit" id="custom-submit-btn">
+            Sign In
+        </button>
+    </form>
+    <div class="my-5">
+        Don't have an account already? <a href="{{ signup_url }}" id="accounts-pages-link">Sign up</a>.
+    </div>
+
+</div>
+{% endblock %}

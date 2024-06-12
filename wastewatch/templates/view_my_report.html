@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <div class="col-5">
+                <div class="card" id="custom-report-card-title">
+                    <div class="card-body">
+                        <h3 class="card-title"><strong>Report Title:</strong></h3>
+                        <h4 class="text-muted" id="text-wrap-custom">{{ report.title }}</h4><br>
+                        <h5 class="card-subtitle">
+                            {% if report.user %}
+                                <strong>Submitted by:</strong> {{ report.user }}
+                            {% endif %}
+                            {% if not report.user %}
+                                <strong>Submitted anonymously</strong>
+                            {% endif %}
+                            on {{ report.date|date:"N j, Y" }}
+                        </h5>
+                    </div>
+                </div> <br>
+                <div class="card" id="custom-report-card-desc">
+                    <div class="card-body">
+                        <h3 class="card-title"><strong>Report Description:</strong></h3>
+                        <p class="card-subtitle text-muted" id="text-wrap-custom">{{ report.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-7">
+                <div class="card" id="custom-report-card-files-map">
+                    <div class="card-body">
+                        <h3 class="card-title"><strong>Report Files:</strong></h3><br>
+                        {% if report.image_file %}
+                            <img src="{{ report.image_file.url }}" class="img-fluid"
+                                 id="custom-report-card-img" alt="Report Image"/>
+                        {% endif %}
+                        {% if report.text_file %}
+                            <iframe src="https://drive.google.com/viewerng/viewer?embedded=true&url={{ report.text_file.url }}"
+                                    width="100%" height="80%"></iframe>
+                        {% endif %}
+                        {% if not report.image_file and not report.text_file %}
+                            <h5 class="card-subtitle">
+                                This image does not include any supporting files.
+                            </h5>
+                        {% endif %}
+                    </div>
+                </div><br>
+                <div class="card" id="custom-report-card-files-map">
+                    <div class="card-body">
+                        <h3 class="card-title"><strong>Report Location:</strong></h3>
+                        {% if report.latitude %}
+                            <div id="review-report-map"></div>
+                        {% endif %}
+                        {% if not report.latitude %}
+                            <p class="font-weight-bold">No Location Data Submitted</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-sm mt-5">
+        {% if report.resolve_explanation %}
+            <p class="font-weight-bold">Report Comments from Review: <span>{{ report.resolve_explanation }}</span></p>
+            {% else %}
+            <p class="font-weight-bold">No admin has resolved this report yet.</p>
+        {% endif %}
+        <div class="row justify-content-left">
+            <div class="col-2">
+                <p class="font-weight-bold">Report Status:</p>
+            </div>
+            <div class="col-2">
+                {% if report.status == 0 %}
+                    <i class="bi bi-save"></i> New
+                {% endif %}
+                {% if report.status == 1 %}
+                     <i class="bi bi-arrow-repeat"></i> In Progress
+                {% endif %}
+                {% if report.status == 2 %}
+                     <i class="bi bi-check-circle"></i> Resolved
+                {% endif %}
+            </div>
+        </div>
+        <a href="{% url 'my_reports' %}" class="btn" id="custom-submit-btn">Return to your reports</a>
+    </div>
+
+    <script>
+        async function initMap() {
+            const { Map } = await google.maps.importLibrary("maps");
+            let lat = {{ report.latitude }};
+            let lng = {{ report.longitude }};
+            const reportLatLng = { lat: lat, lng: lng };
+            const map = new google.maps.Map(document.getElementById("review-report-map"), {
+                zoom: 12,
+                center: reportLatLng,
+                mapId: '{{ google_maps_map_id }}',
+            });
+            let infoWindow = new google.maps.InfoWindow({
+                content: "Report location",
+                position: reportLatLng,
+            });
+            infoWindow.open(map);
+        }
+
+        if (typeof window.initMap === "undefined") {
+            window.initMap = initMap;
+        } else {
+            console.warn("initMap already defined.");
+        }
+
+        initMap();
+    </script>
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&loading=async&callback=initMap">
+    </script>
+{% endblock %}

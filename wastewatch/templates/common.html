@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container mx-3">
+        <h1>Welcome {{ request.user }}!</h1>
+        <p>WasteWatch is a platform for reporting environmental offenses.<br>
+            Please help us accomplish our mission to keep our environment clean and healthy.</p>
+        <a href="{% url 'my_reports' %}" class="btn" id="custom-btn">View your reports</a>
+        <a href="{% url 'upload_file' %}" class="btn" id="custom-btn">Submit new report</a>
+    </div>
+{% endblock %}

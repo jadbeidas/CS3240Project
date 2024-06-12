@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container text-center">
+    <h1><span class="font-bold text-3xl ">Create Your Account</span></h1>
+    <div class="error-wrapper">
+         <div class="errors">
+             {{ form.username.errors }}
+             {{ form.email.errors }}
+             {{ form.password1.errors }}
+             {{ form.password2.errors }}
+         </div>
+    </div>
+    <form method="post" action="{% url 'account_signup' %}">
+        <div>
+            {% csrf_token %}
+            <div class="my-3">
+                <label>
+                    <input type="text" name="username" placeholder="Username" class="form-control">
+                </label>
+            </div>
+            <div class="my-3">
+                <label>
+                    <input type="text" name="email" placeholder="E-mail" class="form-control">
+                </label>
+            </div>
+            <div class="my-3">
+                <label>
+                    <input type="password" name="password1" placeholder="Enter Password" class="form-control">
+                </label>
+            </div>
+            <div class="my-3">
+                <label>
+                    <input type="password" name="password2" placeholder="Reenter Password" class="form-control">
+                </label>
+            </div>
+            <button class="btn" type="submit" id="custom-submit-btn">
+                Sign Up
+            </button>
+        </div>
+    </form>
+    <div class="my-5">
+        Have an account already? Return to <a href="{{ login_url }}" id="accounts-pages-link">Log in</a>.
+    </div>
+</div>
+{% endblock %}

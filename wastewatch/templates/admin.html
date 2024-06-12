@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load report_tags %}
+{% block content %}
+    <h1 class="mx-3">Hello {{ request.user }}!</h1>
+    <p class="mx-3">
+        {% if new == 1 %}
+            There is 1 new report
+        {% else %}
+            There are {{ new }} new reports
+        {% endif %}
+        and
+        {% if progress == 1 %}
+            1 report in progress.
+        {% else %}
+            {{ progress }} reports in progress.
+        {% endif %}
+    </p>
+    <p class="mx-3">Select a report to review</p>
+    <div class="container mb-3 d-flex justify-content-end">
+        <div class="dropdown">
+            <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false" id="custom-dropdown-btn">
+                Sort Reports
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" id="sort-lr" onclick="sortByDate('asc')">Least Recent</a></li>
+                <li><a class="dropdown-item active" href="#" id="sort-mr" onclick="sortByDate('desc')">Most Recent</a></li>
+                <li><a class="dropdown-item" href="#" id="sort-nf" onclick="sortByStatus('asc')">Status (New First)</a></li>
+                <li><a class="dropdown-item" href="#" id="sort-rf" onclick="sortByStatus('desc')">Status (Resolved First)</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="container" id="report-cards-container">
+        <div class="row row-cols-lg-2 g-3" id="report-cards">
+            {% for report in reports %}
+                <div class="col report-card" data-date="{{ report.date }}" data-status="{{ report.status }}">
+                    <a href="{% url 'view_report' report.pk %}" style="text-decoration: none;">
+                        <div class="card h-100" id="reports-array-card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ report.title|truncatechars:40 }}</h5>
+                                {% if not report.user %}
+                                    <p class="card-text">User: Anonymous</p>
+                                {% else %}
+                                    <p class="card-text">User: {{ report.user }}</p>
+                                {% endif %}
+                                <p class="card-text">Report Date: {{ report.date }}</p>
+                                <p class="card-text">
+                                    {% if report.status == 0 %}
+                                    <i class="bi bi-save"></i> <span class="fs-6"> New</span>
+                                    {% elif report.status == 1 %}
+                                    <i class="bi bi-arrow-repeat"></i> <span class="fs-6"> In Progress</span>
+                                    {% else %}
+                                    <i class="bi bi-check-circle"></i> <span class="fs-6"> Resolved</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        function convertTime(dateData) {
+            let time = "00:00";
+            if (dateData.length > 2) {
+                                let timeData = dateData[2].split(" ");
+                const pm = timeData[2]==="p.m."
+                let hm = timeData[1].split(":");
+                let hour = parseInt(hm.at(0));
+                let minute;
+                if (hm.length > 1) {
+                    minute = parseInt(timeData[1].split(":").at(1));
+                }
+                else {
+                    minute = 0;
+                }
+                if (pm && hour < 12){
+                    hour += 12;
+                }
+                time = hour.toString() + ":" + minute.toString();
+            }
+
+            let dateString = dateData[0] + "," + dateData[1] + " " + time;
+            return new Date(dateString);
+        }
+
+        function sortByDate(order) {
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            if (order === 'asc') {
+                document.getElementById('sort-lr').classList.add('active');
+            }
+            else {
+                document.getElementById('sort-mr').classList.add('active');
+            }
+
+            const cardsContainer = document.getElementById("report-cards");
+            const cards = Array.from(cardsContainer.querySelectorAll(".report-card"));
+
+            cards.sort((a, b) => {
+                const dateA = convertTime(a.getAttribute("data-date").split(','));
+                const dateB = convertTime(b.getAttribute("data-date").split(','));
+                return order === 'asc' ? dateA - dateB : dateB - dateA;
+            });
+
+            cards.forEach(card => {
+                cardsContainer.appendChild(card);
+            });
+        }
+
+        function sortByStatus(order) {
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            if (order === 'asc') {
+                document.getElementById('sort-nf').classList.add('active');
+            }
+            else {
+                document.getElementById('sort-rf').classList.add('active');
+            }
+
+            const cardsContainer = document.getElementById("report-cards");
+            const cards = Array.from(cardsContainer.querySelectorAll(".report-card"));
+
+            cards.sort((a, b) => {
+                const statusA = parseInt(a.getAttribute("data-status"));
+                const statusB = parseInt(b.getAttribute("data-status"));
+                return order === 'asc' ? statusA - statusB : statusB - statusA;
+            });
+
+            cards.forEach(card => {
+                cardsContainer.appendChild(card);
+            });
+        }
+    </script>
+{% endblock %}

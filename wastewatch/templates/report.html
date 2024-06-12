@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Submit Report</title>
+        <style>
+            #asterisk {
+                color: #cc7000;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+    <h2 class="mx-3">File a Report to WasteWatch</h2>
+    <p class="mx-3"><span id="asterisk">*</span><small> indicates a required field</small></p>
+    <form class="mx-3" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Report Title<span id="asterisk">*</span></label>
+            {% render_field form.title placeholder="Enter a title for your report" class+="form-control" rows="1" id="report-title" %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Date and Time of the Offense<span id="asterisk">*</span></label>
+            {% render_field form.date placeholder="Enter the date and time of the offense" class+="form-control" id="report-date" %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Describe the environmental offense you witnessed<span
+                    id="asterisk">*</span></label>
+            {% render_field form.description placeholder="Enter a description for your report..." class+="form-control" rows="5" id="report-desc" %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Use the map to place a pin at the location of the offense<span
+                    id="asterisk">*</span></label>
+            <div id="report-map"></div>
+            <input type="hidden" id="id_latitude" name="latitude" value="">
+            <input type="hidden" id="id_longitude" name="longitude" value="">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Upload a supporting image, text file, or PDF</label><br>
+            {% render_field form.file class+="form-control" type="file" id="form-file" %}
+        </div>
+        <button type="submit" class="btn" id="custom-submit-btn">Submit Report</button>
+    </form>
+    </body>
+    <script>
+        let map, infoWindow, marker;
+
+        async function initMap() {
+            const { Map, Marker } = await google.maps.importLibrary("maps");
+            const cvilleLatlng = { lat: 38.035192, lng: -78.503805 };
+
+            map = new google.maps.Map(document.getElementById("report-map"), {
+                zoom: 15,
+                center: cvilleLatlng,
+                mapId: "{{ google_maps_map_id }}",
+            });
+
+            infoWindow = new google.maps.InfoWindow({
+                content: "Click the map to report location",
+                position: cvilleLatlng,
+            });
+
+            infoWindow.open(map);
+
+            map.addListener("click", (mapsMouseEvent) => {
+                infoWindow.close();
+                const pos = {
+                    lat: mapsMouseEvent.latLng.lat(),
+                    lng: mapsMouseEvent.latLng.lng()
+                };
+                if (marker) {
+                    marker.setPosition(pos);
+                } else {
+                    marker = new google.maps.Marker({
+                        position: pos,
+                        map: map,
+                        title: "Report Location",
+                        draggable: true,
+                    });
+                }
+                document.getElementById("id_latitude").value = pos.lat;
+                document.getElementById("id_longitude").value = pos.lng;
+
+                marker.addListener("dragend", () => {
+                    const newPos = marker.getPosition();
+                    document.getElementById("id_latitude").value = newPos.lat();
+                    document.getElementById("id_longitude").value = newPos.lng();
+                });
+            });
+        }
+
+        function validateForm() {
+            const date = Date.parse(document.getElementById("report-date").value);
+            if (date > Date.now())
+            {
+                alert("Please select a date in the past.");
+                return false;
+            }
+
+            const latitude = document.getElementById("id_latitude").value;
+            const longitude = document.getElementById("id_longitude").value;
+            if (latitude === "" || longitude === "") {
+                alert("Please select a location on the map to submit a report.");
+                return false;
+            }
+            return true;
+        }
+
+        if (typeof window.initMap === "undefined") {
+            window.initMap = initMap;
+        } else {
+            console.warn("initMap already defined.");
+        }
+
+        initMap();
+    </script>
+
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&loading=async&callback=initMap">
+    </script>
+{% endblock %}
