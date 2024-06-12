@@ -1,0 +1,12 @@
+asgiref
+Django
+sqlparse
+gunicorn
+django-heroku
+django-allauth
+dj-database-url
+django-widget-tweaks
+boto3
+django-storages
+Pillow
+moto
